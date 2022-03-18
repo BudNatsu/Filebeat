@@ -1,0 +1,30 @@
+filebeat.config:
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: false
+
+
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+      hints.default_config.enabled: false
+#      fields:
+#        source: 'Docker'
+#      fields_under_root: false
+#      json.keys_under_root: true
+#      json.add_error_key: true
+#      json.message_key: "message"
+
+
+processors:
+- add_docker_metadata:
+   host: "unix:///var/run/docker.sock"
+- drop_fields:
+    when:
+      contains:
+        fieldstochange: "name"
+    fields: ["container.labels", "docker.container.labels.io_buildpacks_build_metadata", "docker.container.labels.io_buildpacks_lifecycle_metadata", "docker.container.labels.io_buildpacks_stack_mixins", "docker.container.labels.io_paketo_stack_packages", "docker.container.labels.io_buildpacks_project_metadata", "docker.container.labels.io_buildpacks_stack_description", "docker.container.labels.io_buildpacks_stack_homepage", "docker.container.labels.io_buildpacks_stack_id", " docker.container.labels.io_buildpacks_stack_maintainer", "docker.container.labels.io_buildpacks_stack_maintainer", "docker.container.labels.io_buildpacks_stack_metadata", "docker.container.labels.io_buildpacks_stack_released"]
+    ignore_missing: true
+output.logstash:
+  hosts: '${LOGSTASH_HOST:@iphost:5044}'
